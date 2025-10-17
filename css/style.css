@@ -1,0 +1,23 @@
+body {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+#quiz-container {
+  max-width: 600px;
+  margin: auto;
+  border-radius: 15px;
+}
+
+.progress {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.form-check-label {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.form-check-label:hover {
+  transform: scale(1.03);
+}
