@@ -22,6 +22,12 @@ const questions = [
     image: "https://cdn-icons-png.flaticon.com/512/564/564429.png",
     options: ["25", "34", "50"],
     answer: 1
+  },
+  {
+    question: "Quanto é 10% de 250?",
+    image: "",
+    options: ["20", "25", "30"],
+    answer: 1
   }
 ];
 
@@ -30,8 +36,10 @@ let score = 0;
 
 const quizContainer = document.getElementById("quiz-container");
 const nextBtn = document.getElementById("next-btn");
+const restartBtn = document.getElementById("restart-btn");
 const progressBar = document.getElementById("progress-bar");
 const resultDiv = document.getElementById("result");
+const starsDiv = document.getElementById("stars");
 
 // Recuperar pontuação anterior
 const savedScore = localStorage.getItem("quizScore");
@@ -107,15 +115,23 @@ function nextQuestion() {
 }
 
 function showResult() {
+  const percent = (score / questions.length) * 100;
+  const stars = getStars(percent);
+
   quizContainer.innerHTML = `
     <h3 class="mb-4">🎯 Resultado Final</h3>
-    <p class="fs-5">Você acertou <b>${score}</b> de <b>${questions.length}</b> perguntas.</p>
+    <p class="fs-5 mb-3">Você acertou <b>${score}</b> de <b>${questions.length}</b> perguntas.</p>
+    <div class="fs-2 text-warning mb-3">${stars}</div>
+    <p class="text-muted">Aproveite e tente novamente para melhorar sua pontuação!</p>
   `;
-  nextBtn.style.display = "none";
+
+  nextBtn.classList.add("d-none");
+  restartBtn.classList.remove("d-none");
   resultDiv.innerHTML = "";
 
-  // Salva no localStorage
+  // Salvar pontuação
   localStorage.setItem("quizScore", score);
+  updateStars(percent);
 }
 
 function updateProgress() {
@@ -124,5 +140,36 @@ function updateProgress() {
   progressBar.textContent = `${percent}%`;
 }
 
+// Função de cálculo das estrelas
+function getStars(percent) {
+  let starsCount = 0;
+  if (percent >= 100) starsCount = 5;
+  else if (percent >= 90) starsCount = 4;
+  else if (percent >= 80) starsCount = 3;
+  else if (percent >= 70) starsCount = 2;
+  else if (percent >= 50) starsCount = 1;
+
+  let stars = "★".repeat(starsCount) + "☆".repeat(5 - starsCount);
+  return stars;
+}
+
+// Atualiza as estrelas no topo
+function updateStars(percent = 0) {
+  starsDiv.innerHTML = getStars(percent);
+}
+
+// Reiniciar quiz
+restartBtn.addEventListener("click", () => {
+  currentQuestion = 0;
+  score = 0;
+  restartBtn.classList.add("d-none");
+  nextBtn.classList.remove("d-none");
+  loadQuestion();
+  updateStars(0);
+  progressBar.style.width = "0%";
+  progressBar.textContent = "0%";
+});
+
 // Inicialização
 loadQuestion();
+updateStars(0);
