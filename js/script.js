@@ -1,175 +1,122 @@
-const questions = [
+const quizData = [
   {
-    question: "Quanto é 7 × 8?",
-    image: "https://cdn-icons-png.flaticon.com/512/3582/3582033.png",
-    options: ["54", "56", "64"],
-    answer: 1
+    question: "Quanto é 5 + 3?",
+    img: "",
+    options: ["6", "8", "9"],
+    answer: "8"
   },
   {
-    question: "Qual é a raiz quadrada de 81?",
-    image: "https://cdn-icons-png.flaticon.com/512/2251/2251129.png",
-    options: ["8", "9", "10"],
-    answer: 1
+    question: "Resolva: 9 × 7 = ?",
+    img: "",
+    options: ["56", "63", "72"],
+    answer: "63"
   },
   {
-    question: "Resolva: 12 ÷ 3 + 4 = ?",
-    image: "",
-    options: ["8", "6", "12"],
-    answer: 0
+    question: "Qual é a fração equivalente a 1/2?",
+    img: "",
+    options: ["2/4", "3/6", "4/10"],
+    answer: "2/4"
   },
   {
-    question: "Quanto é (5² + 3²)?",
-    image: "https://cdn-icons-png.flaticon.com/512/564/564429.png",
-    options: ["25", "34", "50"],
-    answer: 1
+    question: "Qual figura mostra um triângulo?",
+    img: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Triangle_-_black_simple.svg",
+    options: ["A", "B", "C"],
+    answer: "A"
   },
   {
-    question: "Quanto é 10% de 250?",
-    image: "",
-    options: ["20", "25", "30"],
-    answer: 1
+    question: "Quanto é 12 ÷ 4?",
+    img: "",
+    options: ["2", "3", "4"],
+    answer: "3"
   }
 ];
 
 let currentQuestion = 0;
 let score = 0;
 
-const quizContainer = document.getElementById("quiz-container");
-const nextBtn = document.getElementById("next-btn");
-const restartBtn = document.getElementById("restart-btn");
+const questionText = document.getElementById("question-text");
+const questionImg = document.getElementById("question-img");
+const optionsContainer = document.getElementById("options");
 const progressBar = document.getElementById("progress-bar");
-const resultDiv = document.getElementById("result");
-const starsDiv = document.getElementById("stars");
-
-// Recuperar pontuação anterior
-const savedScore = localStorage.getItem("quizScore");
-if (savedScore) {
-  resultDiv.innerHTML = `🔁 Último resultado salvo: <b>${savedScore}</b> acertos.`;
-}
+const resultContainer = document.getElementById("result-container");
+const resultText = document.getElementById("result-text");
+const starsContainer = document.getElementById("stars");
+const quizContent = document.getElementById("quiz-content");
+const restartBtn = document.getElementById("restart-btn");
 
 function loadQuestion() {
-  const q = questions[currentQuestion];
-  updateProgress();
+  const q = quizData[currentQuestion];
+  questionText.textContent = q.question;
 
-  let html = `
-    <h4 class="mb-3">${q.question}</h4>
-    ${q.image ? `<img src="${q.image}" class="img-fluid my-3" style="max-width: 180px;">` : ""}
-    <form id="quiz-form">
-  `;
-
-  q.options.forEach((option, index) => {
-    html += `
-      <div class="form-check mb-2">
-        <input class="form-check-input" type="radio" name="answer" value="${index}" id="opt${index}">
-        <label class="form-check-label" for="opt${index}">${option}</label>
-      </div>
-    `;
-  });
-
-  html += `</form>`;
-  quizContainer.innerHTML = html;
-
-  nextBtn.disabled = true;
-  nextBtn.textContent = "Responder";
-  const inputs = document.querySelectorAll('input[name="answer"]');
-  inputs.forEach(input => input.addEventListener("change", () => (nextBtn.disabled = false)));
-
-  nextBtn.removeEventListener("click", nextQuestion);
-  nextBtn.addEventListener("click", checkAnswer);
-}
-
-function checkAnswer() {
-  const selected = document.querySelector('input[name="answer"]:checked');
-  if (!selected) return;
-
-  const answer = parseInt(selected.value);
-  const correct = questions[currentQuestion].answer;
-  const options = document.querySelectorAll(".form-check-input");
-
-  options.forEach((opt, i) => {
-    const label = opt.nextElementSibling;
-    opt.disabled = true;
-    if (i === correct) label.classList.add("text-success", "fw-bold");
-    else if (i === answer) label.classList.add("text-danger");
-  });
-
-  if (answer === correct) {
-    score++;
-    quizContainer.insertAdjacentHTML("beforeend", `<div class="alert alert-success mt-3">✅ Correto!</div>`);
+  if (q.img) {
+    questionImg.src = q.img;
+    questionImg.classList.remove("d-none");
   } else {
-    quizContainer.insertAdjacentHTML("beforeend", `<div class="alert alert-danger mt-3">❌ Errado! Resposta certa: <b>${questions[currentQuestion].options[correct]}</b></div>`);
+    questionImg.classList.add("d-none");
   }
 
-  nextBtn.textContent = currentQuestion === questions.length - 1 ? "Finalizar" : "Próxima";
-  nextBtn.removeEventListener("click", checkAnswer);
-  nextBtn.addEventListener("click", nextQuestion);
+  optionsContainer.innerHTML = "";
+  q.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-primary m-2";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt);
+    optionsContainer.appendChild(btn);
+  });
+
+  updateProgress();
 }
 
-function nextQuestion() {
+function checkAnswer(selected) {
+  if (selected === quizData[currentQuestion].answer) {
+    score++;
+  }
   currentQuestion++;
-  if (currentQuestion < questions.length) {
+  if (currentQuestion < quizData.length) {
     loadQuestion();
   } else {
-    showResult();
+    showResults();
   }
-}
-
-function showResult() {
-  const percent = (score / questions.length) * 100;
-  const stars = getStars(percent);
-
-  quizContainer.innerHTML = `
-    <h3 class="mb-4">🎯 Resultado Final</h3>
-    <p class="fs-5 mb-3">Você acertou <b>${score}</b> de <b>${questions.length}</b> perguntas.</p>
-    <div class="fs-2 text-warning mb-3">${stars}</div>
-    <p class="text-muted">Aproveite e tente novamente para melhorar sua pontuação!</p>
-  `;
-
-  nextBtn.classList.add("d-none");
-  restartBtn.classList.remove("d-none");
-  resultDiv.innerHTML = "";
-
-  // Salvar pontuação
-  localStorage.setItem("quizScore", score);
-  updateStars(percent);
 }
 
 function updateProgress() {
-  const percent = Math.round(((currentQuestion) / questions.length) * 100);
-  progressBar.style.width = `${percent}%`;
-  progressBar.textContent = `${percent}%`;
+  const progress = ((currentQuestion) / quizData.length) * 100;
+  progressBar.style.width = progress + "%";
 }
 
-// Função de cálculo das estrelas
-function getStars(percent) {
-  let starsCount = 0;
-  if (percent >= 100) starsCount = 5;
-  else if (percent >= 90) starsCount = 4;
-  else if (percent >= 80) starsCount = 3;
-  else if (percent >= 70) starsCount = 2;
-  else if (percent >= 50) starsCount = 1;
+function showResults() {
+  quizContent.classList.add("d-none");
+  resultContainer.classList.remove("d-none");
 
-  let stars = "★".repeat(starsCount) + "☆".repeat(5 - starsCount);
-  return stars;
+  const total = quizData.length;
+  const percent = (score / total) * 100;
+  resultText.textContent = `Você acertou ${score} de ${total} perguntas. (${percent.toFixed(0)}%)`;
+
+  // Mostrar estrelas
+  starsContainer.innerHTML = "";
+  let stars = 0;
+  if (percent >= 100) stars = 5;
+  else if (percent >= 90) stars = 4;
+  else if (percent >= 80) stars = 3;
+  else if (percent >= 70) stars = 2;
+  else if (percent >= 50) stars = 1;
+
+  for (let i = 0; i < stars; i++) {
+    starsContainer.innerHTML += "⭐";
+  }
+  for (let i = stars; i < 5; i++) {
+    starsContainer.innerHTML += "<span class='star' style='color: lightgray;'>⭐</span>";
+  }
+
+  progressBar.style.width = "100%";
 }
 
-// Atualiza as estrelas no topo
-function updateStars(percent = 0) {
-  starsDiv.innerHTML = getStars(percent);
-}
-
-// Reiniciar quiz
 restartBtn.addEventListener("click", () => {
   currentQuestion = 0;
   score = 0;
-  restartBtn.classList.add("d-none");
-  nextBtn.classList.remove("d-none");
+  quizContent.classList.remove("d-none");
+  resultContainer.classList.add("d-none");
   loadQuestion();
-  updateStars(0);
-  progressBar.style.width = "0%";
-  progressBar.textContent = "0%";
 });
 
-// Inicialização
 loadQuestion();
-updateStars(0);
