@@ -92,7 +92,6 @@ function showResults() {
   const percent = (score / total) * 100;
   resultText.textContent = `Você acertou ${score} de ${total} perguntas. (${percent.toFixed(0)}%)`;
 
-  // Mostrar estrelas
   starsContainer.innerHTML = "";
   let stars = 0;
   if (percent >= 100) stars = 5;
